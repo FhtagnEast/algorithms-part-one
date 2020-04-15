@@ -26,9 +26,9 @@ public class Percolation {
         }
         this.size = size;
         numberOfOpenSites = 0;
-        weightedQuickUnionUF = new WeightedQuickUnionUF(size * size + 1 + size);
-        isOpen = new boolean[size * size + 1 + size];
-        isFull = new boolean[size * size + 1 + size];
+        weightedQuickUnionUF = new WeightedQuickUnionUF(size * size + 2);
+        isOpen = new boolean[size * size + 2];
+        isFull = new boolean[size * size + 2];
         initArrays();
     }
 
@@ -39,6 +39,10 @@ public class Percolation {
 
         if (row == 1) {
             connectCell(1, 0, row, col);
+        }
+
+        if (row == size) {
+            connectCell(size + 1, 1, row, col);
         }
 
         if (isOpen(row, col)) {
@@ -90,13 +94,8 @@ public class Percolation {
 
     public boolean percolates() {
         if (!percolates) {
-            for (int i = 0; i < size; i++) {
-                percolates = weightedQuickUnionUF.find(0) == weightedQuickUnionUF
-                        .find(convertRowColToIndex(size + 1, i + 1));
-                if (percolates) {
-                    return percolates;
-                }
-            }
+            percolates = weightedQuickUnionUF.find(0) == weightedQuickUnionUF.find(isFull.length - 1);
+            return percolates;
         }
 
         return percolates;
@@ -121,10 +120,9 @@ public class Percolation {
 
     private void initArrays() {
         isOpen[0] = true;
-        for (int i = 0; i < size; i++) {
-            connectCell(size, i + 1, size + 1, i + 1);
-        }
+        isOpen[isOpen.length - 1] = true;
         isFull[0] = true;
+        isFull[isFull.length - 1] = true;
     }
 
 }
