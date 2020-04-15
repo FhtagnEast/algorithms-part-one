@@ -14,13 +14,16 @@ public class Percolation {
 
     private final boolean[] isOpen;
 
-    private int computedOpenSites;
-
     private int numberOfOpenSites;
+
+    private boolean percolates = false;
 
     private final boolean[] isFull;
 
     public Percolation(int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException();
+        }
         this.size = size;
         numberOfOpenSites = 0;
         weightedQuickUnionUF = new WeightedQuickUnionUF(size * size + 1 + size);
@@ -32,6 +35,10 @@ public class Percolation {
     public void open(int row, int col) {
         if (!isArgumentsLegal(row, col)) {
             throw new IllegalArgumentException();
+        }
+
+        if (row == 1) {
+            connectCell(1, 0, row, col);
         }
 
         if (isOpen(row, col)) {
@@ -54,7 +61,6 @@ public class Percolation {
         isOpen[convertRowColToIndex(row, col)] = true;
         numberOfOpenSites += 1;
 
-        recomputeFullArray();
     }
 
     public boolean isOpen(int row, int col) {
@@ -70,33 +76,30 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
 
+        if (!isFull[convertRowColToIndex(row, col)]) {
+            isFull[convertRowColToIndex(row, col)] = weightedQuickUnionUF.find(0) == weightedQuickUnionUF
+                    .find(convertRowColToIndex(row, col));
+        }
+
         return isFull[convertRowColToIndex(row, col)];
     }
 
     public int numberOfOpenSites() {
-        computeOpenSites();
         return numberOfOpenSites;
     }
 
-    private void computeOpenSites() {
-        int counter = 0;
-        for (int i = 1; i <= size * size; i++)  {
-            if (isOpen[i]) {
-                counter++;
-            }
-        }
-        computedOpenSites = counter;
-    }
-
     public boolean percolates() {
-        boolean percolates;
-        for (int i = 0; i < size; i++) {
-            percolates = weightedQuickUnionUF.connected(1, convertRowColToIndex(size + 1, i + 1));
-            if (percolates) {
-                return true;
+        if (!percolates) {
+            for (int i = 0; i < size; i++) {
+                percolates = weightedQuickUnionUF.find(0) == weightedQuickUnionUF
+                        .find(convertRowColToIndex(size + 1, i + 1));
+                if (percolates) {
+                    return percolates;
+                }
             }
         }
-        return false;
+
+        return percolates;
     }
 
     private void connectCell(int row1, int col1, int row2, int col2) {
@@ -106,13 +109,6 @@ public class Percolation {
 
     private int convertRowColToIndex(int row, int col) {
         return size * (row-1) + col;
-    }
-
-    private int[] convertIndexToRowCol(int index) {
-        int[] result = new int[2];
-        result[0] = index / size;
-        result[1] = index % size + 1;
-        return result;
     }
 
     private boolean isArgumentsLegal(int row, int col) {
@@ -126,30 +122,9 @@ public class Percolation {
     private void initArrays() {
         isOpen[0] = true;
         for (int i = 0; i < size; i++) {
-            connectCell(1, 0, 1, i + 1);
             connectCell(size, i + 1, size + 1, i + 1);
         }
         isFull[0] = true;
     }
 
-    private void recomputeFullArray() {
-        for (int i = 1; i <= size; i++) {
-            for (int j = 1; j <= size; j++) {
-                if (isFull(i, j)) {
-                    continue;
-                }
-                if (!isOpen(i, j)) {
-                    continue;
-                }
-                if (weightedQuickUnionUF.connected(0, convertRowColToIndex(i, j))) {
-                    isFull[convertRowColToIndex(i, j)] = true;
-                }
-            }
-            for (int k = size * size + 1; k < size * size + size + 1; k++) {
-                if (isFull(convertIndexToRowCol(k)[0] - 1, convertIndexToRowCol(k)[1])) {
-                    isFull[k] = true;
-                }
-            }
-        }
-    }
 }

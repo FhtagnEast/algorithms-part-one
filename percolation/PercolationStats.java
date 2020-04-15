@@ -9,11 +9,17 @@ import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
 
+    private static final double PROBABILITY_CONSTANT = 1.96;
+
     private final int gridSize;
 
     private final int trialsNumber;
 
     private final double[] openSitesToPercolate;
+
+    private double mean = -1;
+
+    private double stddev = -1;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int gridSize, int trialsNumber) {
@@ -43,22 +49,30 @@ public class PercolationStats {
 
     // sample mean of percolation threshold
     public double mean() {
-        return StdStats.mean(openSitesToPercolate);
+        if (mean == -1) {
+            mean = StdStats.mean(openSitesToPercolate);
+        }
+
+        return mean;
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
-        return StdStats.stddev(openSitesToPercolate);
+        if (stddev == -1) {
+            stddev = StdStats.stddev(openSitesToPercolate);
+        }
+
+        return stddev;
     }
 
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
-        return mean() - (stddev() * 1.96/Math.sqrt(trialsNumber));
+        return mean() - (stddev() * PROBABILITY_CONSTANT/Math.sqrt(trialsNumber));
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
-        return mean() + (stddev() * 1.96/Math.sqrt(trialsNumber));
+        return mean() + (stddev() * PROBABILITY_CONSTANT/Math.sqrt(trialsNumber));
     }
 
     public static void main(String[] args) {
