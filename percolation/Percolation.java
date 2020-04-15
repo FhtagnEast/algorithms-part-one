@@ -14,6 +14,8 @@ public class Percolation {
 
     private final boolean[] isOpen;
 
+    private int computedOpenSites;
+
     private int numberOfOpenSites;
 
     private final boolean[] isFull;
@@ -30,6 +32,10 @@ public class Percolation {
     public void open(int row, int col) {
         if (!isArgumentsLegal(row, col)) {
             throw new IllegalArgumentException();
+        }
+
+        if (isOpen(row, col)) {
+            return;
         }
 
         if (row > 1 && isOpen(row - 1, col)) {
@@ -68,7 +74,18 @@ public class Percolation {
     }
 
     public int numberOfOpenSites() {
+        computeOpenSites();
         return numberOfOpenSites;
+    }
+
+    private void computeOpenSites() {
+        int counter = 0;
+        for (int i = 1; i <= size * size; i++)  {
+            if (isOpen[i]) {
+                counter++;
+            }
+        }
+        computedOpenSites = counter;
     }
 
     public boolean percolates() {
